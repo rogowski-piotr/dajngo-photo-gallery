@@ -41,7 +41,10 @@
                     <th scope="row">Załaduj zdjęcie</th>
                     <td></td>
                     <td>
-                        <input type="file" @change="previewImage" accept="image/*">
+                        <div class="custom-file">
+                          <input type="file" @change="previewImage" accept="image/*" class="custom-file-input" id="customFileLangHTML">
+                          <label class="custom-file-label" for="customFileLangHTML" data-browse="Wybierz plik">{{ this.fileName }}</label>
+                        </div>
                         <div class="image-preview pt-3" v-if="payload.image?.length > 0">
                           <img style="width: 100%; height: 100%" class="preview" :src="payload.image">
                         </div>
@@ -60,6 +63,7 @@
 </template>
 
 <script>
+import router from '../helpers/router';
 import { taskService } from '../services';
 import Navbar from '../components/Navbar';
 
@@ -69,6 +73,7 @@ export default {
   data () {
         return {
             addStatus: null,
+            fileName: null,
             payload: {
                 title: null,
                 description: null,
@@ -80,6 +85,7 @@ export default {
   methods: {
     previewImage: function(event) {
     var input = event.target;
+    console.log(event);
     if (input.files && input.files[0]) {
       var reader = new FileReader();
       reader.onload = (e) => {
@@ -87,6 +93,7 @@ export default {
       }
       reader.readAsDataURL(input.files[0]);
     }
+    this.fileName = event.target.files[0].name;
     },
     add() {
       if (! this.validatePayload()) {
@@ -97,7 +104,10 @@ export default {
         .then(response => {
           console.log(response);
           this.addStatus = response.status == 201 ? true : false;
-      }).catch(() => this.addStatus = false);
+        })
+        .then(router.push({path: "/?addStatus=true"}))
+        .then(() => window.location.href = '/?addStatus=true')
+        .catch(() => this.addStatus = false);
     },
     validatePayload() {
       return (this.payload.title != null && this.payload.title.length > 0)
